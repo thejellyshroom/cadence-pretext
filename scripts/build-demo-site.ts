@@ -5,6 +5,7 @@ const root = process.cwd()
 const outdir = path.join(root, 'site')
 const entrypoints = [
   'pages/demos/index.html',
+  'pages/demos/liquid-webgl.html',
   'pages/demos/accordion.html',
   'pages/demos/bubbles.html',
   'pages/demos/dynamic-layout.html',
@@ -31,6 +32,7 @@ if (result.exitCode !== 0) {
 
 const targets = [
   { source: 'index.html', target: 'index.html' },
+  { source: 'liquid-webgl.html', target: 'liquid-webgl/index.html' },
   { source: 'accordion.html', target: 'accordion/index.html' },
   { source: 'bubbles.html', target: 'bubbles/index.html' },
   { source: 'dynamic-layout.html', target: 'dynamic-layout/index.html' },

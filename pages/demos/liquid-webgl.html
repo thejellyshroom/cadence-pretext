@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liquid typography</title>
+  <title>Liquid type</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -43,14 +43,41 @@
       font-family: var(--serif);
     }
 
-    /* ── Canvas fills screen ─────────────────────────────── */
-    #gl {
+    /* ── Page + stage (same stacking idea as dynamic-layout.html) ── */
+    .liquid-page {
       position: fixed;
       inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .liquid-page .stage {
+      position: relative;
       width: 100%;
-      height: 100%;
+      min-height: 100%;
+    }
+
+    .liquid-line {
+      position: absolute;
+      margin: 0;
+      white-space: pre;
+      color: var(--ink);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      user-select: text;
+      cursor: text;
+      z-index: 1;
+    }
+
+    .cursor-svg {
+      position: absolute;
       display: block;
-      touch-action: none;
+      user-select: none;
+      pointer-events: none;
+      transform-origin: center center;
+      z-index: 3;
+      filter: drop-shadow(0 12px 24px rgba(94, 224, 255, 0.12));
     }
 
     /* ── HUD panel ───────────────────────────────────────── */
@@ -343,14 +370,16 @@
 
 <body>
 
-  <canvas id="gl" aria-label="Liquid WebGL typography"></canvas>
+  <main class="liquid-page page" aria-label="Layout stage">
+    <div id="stage" class="stage"></div>
+  </main>
 
   <aside class="hud" role="complementary" aria-label="Controls">
     <div class="hud-inner">
 
       <div class="hud-head">
         <h1 class="hud-title"><em>liquid</em> type</h1>
-        <span class="hud-tag">Pretext / WebGL</span>
+        <span class="hud-tag">Pretext / layout</span>
       </div>
 
       <audio id="track" loop playsinline preload="auto" crossorigin="anonymous"
@@ -361,12 +390,7 @@
 
       <div class="sound-row">
         <button type="button" id="audioToggle" aria-pressed="false">Play motion</button>
-        <label class="file-pick">
-          <input type="file" id="audioFile" accept="audio/*" />
-          <span>Your track</span>
-        </label>
-        <button type="button" id="mic" class="mic-secondary" aria-pressed="false">Live mic</button>
-        <button type="button" id="shapeBtn" aria-label="Cycle cursor gravity shape">Shape · circle</button>
+        <button type="button" id="shapeBtn" aria-label="Cycle floating SVG shape">Shape · circle</button>
       </div>
 
       <div class="controls">
@@ -392,7 +416,8 @@
       </div>
 
       <div class="hud-foot">
-        <p id="hint">drag — sculpt wrap · wheel — cursor radius · shape — gravity field</p>
+        <p id="hint">move — SVG follows pointer; text fills slots on both sides of the shape · drag — column width ·
+          wheel — SVG size · shape — cycle glyph</p>
       </div>
 
     </div>
@@ -402,37 +427,10 @@
 
   <script type="module" src="./liquid-webgl.ts"></script>
 
-  <!-- Audio bar animation driven from TS via custom events -->
   <script>
-    // Tiny bridge: the TS module dispatches 'audiobands' events
-    window.addEventListener('audiobands', e => {
-      const { bass, mid, high, pulse } = e.detail
-      const p = typeof pulse === 'number' ? pulse : 0
-      const bars = [
-        document.getElementById('bar0'),
-        document.getElementById('bar1'),
-        document.getElementById('bar2'),
-        document.getElementById('bar3'),
-        document.getElementById('bar4'),
-      ]
-      const vals = [
-        bass * (1 + p * 2),
-        (bass + mid) * 0.5 * (1 + p),
-        mid * (1 + p * 0.8),
-        (mid + high) * 0.5,
-        high * (1 + p * 1.2),
-      ]
-      bars.forEach((b, i) => {
-        if (b) b.style.height = Math.max(2, Math.min(14, vals[i] * 16)) + 'px'
-      })
-      const container = document.getElementById('audioBars')
-      if (container) container.classList.toggle('active', bass + mid + high + p > 0.04)
-    })
-
-    // Wire up line count stat
     window.addEventListener('layoutstats', e => {
       const lv = document.getElementById('lineVal')
-      if (lv) lv.textContent = e.detail.lines
+      if (lv) lv.textContent = String(e.detail.lines)
     })
   </script>
 </body>

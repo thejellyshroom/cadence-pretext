@@ -282,6 +282,25 @@ async function makeWrapHull(src: string, options: WrapHullOptions): Promise<Poin
   return makeConvexHull(points)
 }
 
+/**
+ * Horizontal intersection intervals of a polygon with the scanline `y`
+ * (pairs in xs: [l0,r0, l1,r1, …]). Use for a single row; avoids merging
+ * disjoint spans across a tall band into one false “bounding” rectangle.
+ */
+export function getPolygonIntervalsAtY(points: Point[], y: number, horizontalPadding: number): Interval[] {
+  const xs = getPolygonXsAtY(points, y)
+  const out: Interval[] = []
+  for (let i = 0; i + 1 < xs.length; i += 2) {
+    const left = xs[i]!
+    const right = xs[i + 1]!
+    out.push({
+      left: left - horizontalPadding,
+      right: right + horizontalPadding,
+    })
+  }
+  return out.filter(iv => iv.right - iv.left > 0.5)
+}
+
 function getPolygonXsAtY(points: Point[], y: number): number[] {
   const xs: number[] = []
   let a = points[points.length - 1]

@@ -89,7 +89,7 @@ const range = layoutNextLineRange(prepared, cursor, hull.intervalAt(y))
 The `AudioContext` analyzes the playing track with an FFT. Band energy maps to the hull's scale, morph factor, and wave amplitude. The obstacle literally breathes with the music — and because Pretext's layout is arithmetic after prepare, the text reorganizes around every breath without dropping a frame.
 
 **Cursor shapes:**
-The floating hull can be a blob (morphing bezier path), a circle, or a cross. Each produces a different obstacle geometry, a different width function per Y position, and therefore a different column shape. The text does not know or care what shape the obstacle is. It just flows into whatever space is available.
+The floating hull can be a blob (morphing bezier path) or a circle. Each produces a different obstacle geometry, a different width function per Y position, and therefore a different column shape. The text does not know or care what shape the obstacle is. It just flows into whatever space is available.
 
 ---
 
@@ -124,7 +124,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Try it
 
 - **Play motion** — Pick a built-in track or drop in your own audio file. The hull expands and contracts with the spectrum. Watch the line count change in the Activity card as the available width shifts.
-- **Obstacle** — Cycle through blob, circle, and cross. Each shape produces a different column profile. The blob morphs continuously; the cross cuts two notches into the available width simultaneously.
+- **Obstacle** — Cycle through blob and circle. Each shape produces a different column profile. The blob morphs continuously.
 - **Drag and scroll** — Move the obstacle anywhere in the column. Scroll to resize it. The text wraps around it in real time regardless of position or scale.
 - **Type in the panel** — Replace the body copy. `prepareWithSegments()` re-runs on the new text. Everything else stays the same.
 

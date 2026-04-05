@@ -21,11 +21,12 @@ export const GLITCH_COOLDOWN_MS = 95
 export const GLITCH_LINE_COLOR = '#5ee0ff'
 
 /** Fraction of `BODY_LINE_HEIGHT`: horizontal inset around cursor hull for text wrap. */
-export const CURSOR_WRAP_H_PAD_FRAC = 0.055
-/** Fraction of `BODY_LINE_HEIGHT`: vertical inset around cursor hull. */
-export const CURSOR_WRAP_V_PAD_FRAC = 0.014
+export const CURSOR_WRAP_H_PAD_FRAC = 0.03
+/** Fraction of `BODY_LINE_HEIGHT`: vertical inset (used as fallback scan offset in band geometry). */
+export const CURSOR_WRAP_V_PAD_FRAC = 0.012
 
-export const WRAP_HULL_OPTS = { smoothRadius: 6, mode: 'mean' as const }
+/** Lower `smoothRadius` follows the raster hull more tightly; hull cache key changes on edits. */
+export const WRAP_HULL_OPTS = { smoothRadius: 3, mode: 'mean' as const }
 
 export function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v))

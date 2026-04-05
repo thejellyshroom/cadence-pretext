@@ -12,6 +12,9 @@ export const RING_BLOB_PATH_B =
 /** ~5.5s full A↔B cycle (radians per ms). */
 export const RING_MORPH_SPEED = 0.00115
 
+/** Must match morph `<svg viewBox="0 0 …">` — used for `getBBox` → screen mapping. */
+export const RING_VIEWBOX = 440
+
 const RING_FILL_RGB_A = { r: 255, g: 214, b: 232 }
 const RING_FILL_RGB_B = { r: 138, g: 63, b: 252 }
 
@@ -48,17 +51,11 @@ export const CURSOR_SHAPES = [
     hullSvg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><circle cx="64" cy="64" r="46" fill="#fff"/></svg>',
   },
-  {
-    id: 2,
-    name: 'cross',
-    hullSvg:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect x="54" y="22" width="20" height="84" fill="#fff"/><rect x="22" y="54" width="84" height="20" fill="#fff"/></svg>',
-  },
 ] as const
 
 export type CursorShape = (typeof CURSOR_SHAPES)[number]
 
-/** Cursor `<img>` preview: blob stays soft glass; circle/cross use solid accent fill. */
+/** Cursor `<img>` preview: blob stays soft glass; circle uses solid accent fill. */
 export function svgDisplayDataUrl(hullSvg: string, opaqueFill = false): string {
   const fill = opaqueFill ? 'fill="#5ee0ff"' : 'fill="rgba(94,224,255,0.22)"'
   const vis = hullSvg.replace(/fill="#fff"/g, fill)
@@ -140,4 +137,67 @@ export function ringWrapObstaclePoints(
     x: p.x + (b[i]!.x - p.x) * u,
     y: p.y + (b[i]!.y - p.y) * u,
   }))
+}
+
+/**
+ * Lerped hull vertices are not the true morphed outline: intermediate paths can be shorter/narrower
+ * than linear interpolation of A/B hulls, especially on the vertical axis. After updating `pathEl`’s
+ * `d`, map the wrap polygon to the path’s `getBBox()` in screen space (independent X/Y scale from
+ * hull bbox) so wrap tracks wheel scale (`sz`) and animation.
+ */
+export function fitBlobWrapToPathScreenBBox(
+  wrapPts: Point[],
+  pathEl: SVGPathElement,
+  hx: number,
+  hy: number,
+  sz: number,
+): Point[] {
+  if (wrapPts.length < 3 || sz < 2) return wrapPts
+  let bb: DOMRect
+  try {
+    bb = pathEl.getBBox()
+  } catch {
+    return wrapPts
+  }
+  if (bb.width < 0.5 || bb.height < 0.5) return wrapPts
+
+  const scale = sz / RING_VIEWBOX
+  const target = {
+    x: hx + bb.x * scale,
+    y: hy + bb.y * scale,
+    width: bb.width * scale,
+    height: bb.height * scale,
+  }
+  const tcx = target.x + target.width * 0.5
+  const tcy = target.y + target.height * 0.5
+
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (let i = 0; i < wrapPts.length; i++) {
+    const p = wrapPts[i]!
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+  const w = maxX - minX
+  const h = maxY - minY
+  if (w < 1 || h < 1) return wrapPts
+
+  const scx = (minX + maxX) * 0.5
+  const scy = (minY + maxY) * 0.5
+  const sx = target.width / w
+  const sy = target.height / h
+
+  const out: Point[] = new Array(wrapPts.length)
+  for (let i = 0; i < wrapPts.length; i++) {
+    const p = wrapPts[i]!
+    out[i] = {
+      x: tcx + (p.x - scx) * sx,
+      y: tcy + (p.y - scy) * sy,
+    }
+  }
+  return out
 }

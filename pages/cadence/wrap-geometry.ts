@@ -70,6 +70,34 @@ export function isPointInPolygon(points: Point[], x: number, y: number): boolean
   return inside
 }
 
+/**
+ * Horizontal span of `points` at one scanline `y` (pixel coords), expanded by `horizontalPadding`.
+ * Multiple spans (holes) collapse to one outer [minLeft, maxRight] at that y — fine for blob/circle.
+ */
+function polygonIntervalAtScanlineY(
+  points: Point[],
+  y: number,
+  horizontalPadding: number,
+): Interval | null {
+  const xs = getPolygonXsAtY(points, y)
+  if (xs.length < 2) return null
+  let left = Infinity
+  let right = -Infinity
+  for (let index = 0; index + 1 < xs.length; index += 2) {
+    const runLeft = xs[index]!
+    const runRight = xs[index + 1]!
+    if (runLeft < left) left = runLeft
+    if (runRight > right) right = runRight
+  }
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return null
+  return { left: left - horizontalPadding, right: right + horizontalPadding }
+}
+
+/**
+ * Blocked interval for one text line band. Uses the polygon cross-section at the line’s **vertical
+ * center** (not the min/max x across the whole line height). The old approach merged every scanline
+ * in the band, which inflated the gap to a “bounding strip” and made wrap feel rectangular and loose.
+ */
 export function getPolygonIntervalForBand(
   points: Point[],
   bandTop: number,
@@ -77,26 +105,20 @@ export function getPolygonIntervalForBand(
   horizontalPadding: number,
   verticalPadding: number,
 ): Interval | null {
-  const sampleTop = bandTop - verticalPadding
-  const sampleBottom = bandBottom + verticalPadding
-  const startY = Math.floor(sampleTop)
-  const endY = Math.ceil(sampleBottom)
-
-  let left = Infinity
-  let right = -Infinity
-
-  for (let y = startY; y <= endY; y++) {
-    const xs = getPolygonXsAtY(points, y + 0.5)
-    for (let index = 0; index + 1 < xs.length; index += 2) {
-      const runLeft = xs[index]!
-      const runRight = xs[index + 1]!
-      if (runLeft < left) left = runLeft
-      if (runRight > right) right = runRight
-    }
+  const mid = (bandTop + bandBottom) * 0.5
+  const candidates = [
+    mid + 0.5,
+    bandTop + 1,
+    bandBottom - 1,
+    bandTop + verticalPadding + 0.5,
+    bandBottom - verticalPadding - 0.5,
+  ]
+  for (let index = 0; index < candidates.length; index++) {
+    const y = candidates[index]!
+    const interval = polygonIntervalAtScanlineY(points, y, horizontalPadding)
+    if (interval !== null) return interval
   }
-
-  if (!Number.isFinite(left) || !Number.isFinite(right)) return null
-  return { left: left - horizontalPadding, right: right + horizontalPadding }
+  return null
 }
 
 export function getRectIntervalsForBand(

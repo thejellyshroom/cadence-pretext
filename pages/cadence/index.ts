@@ -37,6 +37,8 @@ import {
   RING_BLOB_PATH_B,
   RING_BLOB_PATH_D,
   RING_MORPH_SPEED,
+  RING_VIEWBOX,
+  fitBlobWrapToPathScreenBBox,
   ringMorphFillRgba,
   ringWrapObstaclePoints,
   splicePathNumbers,
@@ -190,7 +192,7 @@ cursorImg.draggable = false
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 const morphSvg = document.createElementNS(SVG_NS, 'svg')
-morphSvg.setAttribute('viewBox', '0 0 440 440')
+morphSvg.setAttribute('viewBox', `0 0 ${RING_VIEWBOX} ${RING_VIEWBOX}`)
 morphSvg.setAttribute('xmlns', SVG_NS)
 morphSvg.style.display = 'none'
 const morphPathEl = document.createElementNS(SVG_NS, 'path')
@@ -331,7 +333,11 @@ function commitFrame(): void {
     blobHullRawA.length > 2 &&
     blobHullRawB.length > 2
   ) {
-    const wrapPts = ringWrapObstaclePoints(hx, hy, sz, blobMorphEased, blobHullRawA, blobHullRawB)
+    const lerped = ringWrapObstaclePoints(hx, hy, sz, blobMorphEased, blobHullRawA, blobHullRawB)
+    const wrapPts =
+      lerped.length > 2
+        ? fitBlobWrapToPathScreenBBox(lerped, morphPathEl, hx, hy, sz)
+        : lerped
     if (wrapPts.length > 2) {
       obstacles.push({
         kind: 'polygon',
@@ -451,7 +457,7 @@ dom.shapeBtn.addEventListener('click', () => {
     ensureBlobMorphAnim()
   } else {
     stopBlobMorphAnim()
-    cursorImg.src = svgDisplayDataUrl(s.hullSvg, s.name === 'circle' || s.name === 'cross')
+    cursorImg.src = svgDisplayDataUrl(s.hullSvg, s.name === 'circle')
   }
   committedLines = null
   scheduleRender()

@@ -20,7 +20,7 @@ On GitHub Pages builds, the same entry is exposed as the main demo route for thi
 ## What to try
 
 - **Motion audio** — Pick a track and press **Play motion**. An `AudioContext` analyzes the playing `<audio>` element (parallel band splits + RMS). That signal drives a **moving wrap boundary** on the text column (see `audio.ts` / `updateAudioWave`).
-- **Obstacle** — Cycle **Obstacle · …** to swap the floating hull between **blob** (morphing path), **circle**, and **cross**. The hull is a separate wrap obstacle from the audio-driven edge; both participate in `layoutColumn` via `wrap-geometry.ts`.
+- **Obstacle** — Cycle **Obstacle · …** to swap the floating hull between **blob** (morphing path) and **circle**. The hull is a separate wrap obstacle from the audio-driven edge; both participate in `layoutColumn` via `wrap-geometry.ts`.
 - **Drag & scale** — Move the SVG obstacle; **scroll** (wheel) to resize it. The text reflows immediately against the new hull and wrap column.
 - **Glitch display** — With motion playing, some graphemes are redrawn with a cyan “glitch” treatment when the display string diverges from the layout string (`display-glitch.ts`, `.cadence-line__glitch` in `pages/index.html`).
 

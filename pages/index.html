@@ -197,8 +197,9 @@
       margin-bottom: 20px;
     }
 
+    /* Tight to footer: avoid stacking section margin + footer padding (read as “double” gap). */
     .hud-section:last-of-type {
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
 
     .hud-section-title {
@@ -416,7 +417,7 @@
     }
 
     .hud-hint-wrap {
-      padding-top: 16px;
+      padding-top: 12px;
       border-top: 1px solid var(--border);
     }
 

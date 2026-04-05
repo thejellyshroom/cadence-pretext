@@ -3,17 +3,15 @@ import path from 'node:path'
 
 const root = process.cwd()
 const outdir = path.join(root, 'site')
-const entrypoints = ['pages/index.html']
+const entrypoints = ['pages/index.html', 'pages/benchmark.html']
 
 const DEFAULT_CADENCE_ORIGIN = 'https://cadence-pretext.vercel.app'
 
 /** Prefer env on Vercel so canonical / Open Graph URLs match the real production host. */
 function rewriteSocialOrigin(html: string): string {
-  const fromEnv =
-    process.env.CADENCE_SITE_ORIGIN?.replace(/\/$/, '') ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : '')
+  const cadenceOrigin = process.env['CADENCE_SITE_ORIGIN']?.replace(/\/$/, '')
+  const vercelProd = process.env['VERCEL_PROJECT_PRODUCTION_URL']
+  const fromEnv = cadenceOrigin || (vercelProd ? `https://${vercelProd}` : '')
   if (!fromEnv || fromEnv === DEFAULT_CADENCE_ORIGIN) return html
   return html.split(DEFAULT_CADENCE_ORIGIN).join(fromEnv)
 }
@@ -29,6 +27,7 @@ if (result.exitCode !== 0) {
 }
 
 await moveBuiltHtml('index.html', 'index.html')
+await moveBuiltHtml('benchmark.html', 'benchmark.html')
 await copyPagesAssetsToSite()
 await rm(path.join(outdir, 'pages'), { recursive: true, force: true })
 
@@ -37,6 +36,7 @@ async function resolveBuiltHtmlPath(relativePath: string): Promise<string> {
     path.join(outdir, relativePath),
     path.join(outdir, 'pages', relativePath),
     path.join(outdir, 'pages', 'demos', relativePath),
+    path.join(outdir, 'pages', 'benchmark', relativePath),
   ]
   for (let index = 0; index < candidates.length; index++) {
     const candidate = candidates[index]!

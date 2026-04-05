@@ -303,18 +303,15 @@
       outline-offset: 2px;
     }
 
-    .hud-about-card {
-      background: var(--panel-inset);
-      border: 1px solid var(--border-strong);
-      border-radius: 10px;
-      padding: 18px 20px;
-      margin-bottom: 16px;
-    }
-
     .hud-about-body {
       font: 400 16px/1.65 var(--serif);
       color: var(--ink-read);
       letter-spacing: 0.01em;
+      margin: 0;
+    }
+
+    .hud-about-body + .hud-btn-nav {
+      margin-top: 20px;
     }
 
     .hud-about-body p+p {
@@ -471,20 +468,6 @@
         <p class="hud-lede">Spectrum shapes the wrap column. Drag the hull, scroll to resize, cycle the obstacle.</p>
       </header>
 
-      <section class="hud-section" aria-labelledby="hud-about-h">
-        <h2 id="hud-about-h" class="hud-section-title">About Pretext</h2>
-        <div class="hud-about-card">
-          <div class="hud-about-body">
-            <p><strong>Pretext</strong> prepares text against the browser’s font engine once, then reflows at new widths
-              with arithmetic only—no per-frame DOM measurement or canvas work on the hot path.</p>
-          </div>
-        </div>
-        <a class="hud-btn-nav" href="/benchmark">Open benchmark<svg viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M7 17 17 7M17 7H9M17 7v8" />
-          </svg></a>
-      </section>
-
       <audio id="track" loop playsinline preload="auto" crossorigin="anonymous"></audio>
 
       <section class="hud-section" aria-labelledby="hud-audio-h">
@@ -501,9 +484,19 @@
         <button type="button" id="shapeBtn" aria-label="Cycle floating SVG obstacle shape">Obstacle · blob</button>
       </section>
 
+      <section class="hud-section" aria-labelledby="hud-about-h">
+        <h2 id="hud-about-h" class="hud-section-title">About Pretext</h2>
+        <div class="hud-about-body">
+          <p><strong>Pretext</strong> prepares text against the browser’s font engine once, then reflows at new widths
+            with arithmetic only—no per-frame DOM measurement or canvas work on the hot path.</p>
+        </div>
+        <a class="hud-btn-nav" href="/benchmark">Open benchmark<svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7M17 7H9M17 7v8" />
+          </svg></a>
+      </section>
+
       <footer class="hud-hint-wrap" aria-label="Shortcuts and attribution">
-        <p id="hint">Choose a track and play — spectrum drives the left column edge. Drag the SVG, scroll to scale,
-          use Obstacle to cycle hulls.</p>
         <p class="hud-attribution">
           Design and build by
           <a href="https://jellyshroom.com" rel="noopener noreferrer" target="_blank">thejellyshroom<span

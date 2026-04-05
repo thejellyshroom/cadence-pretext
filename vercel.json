@@ -3,5 +3,6 @@
   "framework": null,
   "installCommand": "bun install",
   "buildCommand": "bun run site:build",
-  "outputDirectory": "site"
+  "outputDirectory": "site",
+  "rewrites": [{ "source": "/benchmark", "destination": "/benchmark.html" }]
 }

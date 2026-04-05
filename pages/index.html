@@ -73,6 +73,54 @@
       font-family: var(--serif);
     }
 
+    /* Desktop-only: below `CADENCE_DESKTOP_MIN_WIDTH_PX` in `cadence/index.ts` (1024). */
+    .cadence-desktop-gate {
+      display: none;
+    }
+
+    @media (max-width: 1023px) {
+
+      html,
+      body {
+        overflow: auto;
+        min-height: 100%;
+        height: auto;
+      }
+
+      .cadence-desktop-gate {
+        display: flex;
+        min-height: 100dvh;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 22px 40px;
+        text-align: center;
+      }
+
+      .cadence-desktop-gate__inner {
+        max-width: 26rem;
+      }
+
+      .cadence-desktop-gate__title {
+        font: 500 13px/1.3 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 16px;
+      }
+
+      .cadence-desktop-gate__body {
+        font: 400 19px/1.55 var(--serif);
+        color: var(--ink-read);
+        letter-spacing: 0.02em;
+      }
+
+      .cadence-page,
+      .hud,
+      .corner {
+        display: none !important;
+      }
+    }
+
     .cadence-page {
       position: fixed;
       inset: 0;
@@ -560,6 +608,14 @@
 </head>
 
 <body>
+
+  <div class="cadence-desktop-gate" role="status" aria-live="polite">
+    <div class="cadence-desktop-gate__inner">
+      <p class="cadence-desktop-gate__title">Desktop only</p>
+      <p class="cadence-desktop-gate__body">Cadence is built for pointer, wheel, and a wide layout. Open this page on a
+        desktop or laptop with a window at least about 1024 pixels wide.</p>
+    </div>
+  </div>
 
   <main class="cadence-page page" aria-label="Cadence layout stage">
     <div id="stage" class="stage"></div>

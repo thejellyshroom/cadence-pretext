@@ -1,6 +1,8 @@
 # Cadence
 
-**Cadence** is the shipped Pretext browser demo at `/` (entry HTML: `pages/index.html`, logic: `pages/demos/index.ts`). It combines **streaming line layout** (`layoutNextLine` / `layoutNextLineRange`), a **polygon wrap obstacle** driven by **audio spectrum**, and a **draggable SVG hull** so you can see obstacle-aware reflow in motion. The old `/demos/index` URL redirects to `/`.
+**Cadence** is the shipped Pretext browser demo at `/` (entry HTML: `pages/index.html`, bootstrap: `pages/cadence/index.ts`, runtime: `pages/cadence/cadence-app.ts`). It combines **streaming line layout** (`layoutNextLine` / `layoutNextLineRange`), a **polygon wrap obstacle** driven by **audio spectrum**, and a **draggable SVG hull** so you can see obstacle-aware reflow in motion. The old `/demos/index` URL redirects to `/`.
+
+**Viewport:** Cadence is **desktop-only** (about **1024px** min width). Narrower viewports see a short message instead; the demo script is not loaded until the viewport qualifies.
 
 It is a dogfood page for the rich layout path: prepare once with segments, then step lines manually while widths change every frame.
 

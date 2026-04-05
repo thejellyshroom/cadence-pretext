@@ -1,3 +1,4 @@
+import './analytics.ts'
 import {
   prepare,
   prepareWithSegments,

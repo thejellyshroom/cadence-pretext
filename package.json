@@ -77,5 +77,8 @@
     "oxlint-tsgolint": "^0.15.0",
     "tsgolint": "^0.0.1",
     "typescript": "6.0.2"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }

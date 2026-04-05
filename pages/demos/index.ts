@@ -1,6 +1,7 @@
 /**
  * Cadence demo: `layoutColumn` + polygon obstacles; draggable SVG hull; audio-driven wrap wall.
  */
+import '../analytics.ts'
 import { prepareWithSegments, type PreparedTextWithSegments } from '../../src/layout.ts'
 import { getWrapHull, transformWrapPoints, type Point, type Rect } from './wrap-geometry.ts'
 import {

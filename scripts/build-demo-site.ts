@@ -7,6 +7,14 @@ const entrypoints = ['pages/index.html', 'pages/benchmark.html']
 
 const DEFAULT_CADENCE_ORIGIN = 'https://cadence-pretext.vercel.app'
 
+/** Create placeholder for Vercel Analytics script (actual script provided by Vercel deployment). */
+async function ensureVercelAnalyticsPlaceholder(): Promise<void> {
+  const placeholderDir = path.join(root, '_vercel', 'insights')
+  const placeholderPath = path.join(placeholderDir, 'script.js')
+  await mkdir(placeholderDir, { recursive: true })
+  await writeFile(placeholderPath, '// Vercel Analytics placeholder - actual script provided by Vercel deployment\n')
+}
+
 /** Prefer env on Vercel so canonical / Open Graph URLs match the real production host. */
 function rewriteSocialOrigin(html: string): string {
   const cadenceOrigin = process.env['CADENCE_SITE_ORIGIN']?.replace(/\/$/, '')
@@ -16,11 +24,23 @@ function rewriteSocialOrigin(html: string): string {
   return html.split(DEFAULT_CADENCE_ORIGIN).join(fromEnv)
 }
 
-const result = Bun.spawnSync(['bun', 'build', ...entrypoints, '--outdir', outdir], {
-  cwd: root,
-  stdout: 'inherit',
-  stderr: 'inherit',
-})
+/** Inject Vercel Web Analytics script into HTML after bundling. */
+function injectVercelAnalytics(html: string): string {
+  const analyticsScript = `<script defer src="/_vercel/insights/script.js"></script>`
+  // Insert before closing </head> tag
+  return html.replace('</head>', `  ${analyticsScript}\n</head>`)
+}
+
+await ensureVercelAnalyticsPlaceholder()
+
+const result = Bun.spawnSync(
+  ['bun', 'build', ...entrypoints, '--outdir', outdir, '--external', '/_vercel/insights/script.js'],
+  {
+    cwd: root,
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }
+)
 
 if (result.exitCode !== 0) {
   process.exit(result.exitCode)
@@ -52,6 +72,7 @@ async function moveBuiltHtml(sourceRelativePath: string, targetRelativePath: str
   html = rebaseRelativeAssetUrls(html, sourcePath, targetPath)
   html = rewriteDemoLinksForStaticRoot(html, targetRelativePath)
   html = rewriteSocialOrigin(html)
+  html = injectVercelAnalytics(html)
 
   await mkdir(path.dirname(targetPath), { recursive: true })
   await writeFile(targetPath, html)

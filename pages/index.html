@@ -5,6 +5,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadence — Pretext demo</title>
+  <!-- Link previews: update the origin if the production URL changes -->
+  <link rel="canonical" href="https://cadence-pretext.vercel.app/">
+  <meta name="description"
+    content="Cadence — a live demo of Pretext: browser-grounded text layout with streaming lines, polygon obstacles, and audio-driven reflow. No hot-path DOM measurement.">
+  <meta property="og:site_name" content="Cadence">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Cadence — Pretext demo">
+  <meta property="og:description"
+    content="Audio-driven obstacle layout built with Pretext: prepare real font metrics once, then reflow with the rich line API — streaming layout, draggable hull, spectrum-shaped column.">
+  <meta property="og:url" content="https://cadence-pretext.vercel.app/">
+  <meta property="og:image" content="https://cadence-pretext.vercel.app/assets/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cadence — Pretext demo">
+  <meta name="twitter:description"
+    content="Audio-driven obstacle layout built with Pretext: prepare real font metrics once, then reflow with the rich line API.">
+  <meta name="twitter:image" content="https://cadence-pretext.vercel.app/assets/og-image.jpg">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" href="./assets/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="https://cadence-pretext.vercel.app/assets/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -352,6 +374,50 @@
       opacity: 0.9;
     }
 
+    .hud-attribution {
+      margin: 0;
+      font: 400 13px/1.55 var(--serif);
+      color: var(--ink-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .hud-hint-wrap .hud-attribution {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .hud-attribution a {
+      color: var(--gold);
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .hud-attribution a:hover {
+      color: #dcc496;
+      border-bottom-color: rgba(200, 169, 110, 0.45);
+    }
+
+    .hud-attribution a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .hud-hint-wrap {
       padding-top: 16px;
       border-top: 1px solid var(--border);
@@ -380,7 +446,8 @@
       #audioToggle,
       #shapeBtn,
       #trackSelect,
-      .hud-btn-nav {
+      .hud-btn-nav,
+      .hud-attribution a {
         transition-duration: 0.01ms !important;
       }
     }
@@ -434,9 +501,14 @@
         <button type="button" id="shapeBtn" aria-label="Cycle floating SVG obstacle shape">Obstacle · blob</button>
       </section>
 
-      <footer class="hud-hint-wrap">
+      <footer class="hud-hint-wrap" aria-label="Shortcuts and attribution">
         <p id="hint">Choose a track and play — spectrum drives the left column edge. Drag the SVG, scroll to scale,
           use Obstacle to cycle hulls.</p>
+        <p class="hud-attribution">
+          Design and build by
+          <a href="https://jellyshroom.com" rel="noopener noreferrer" target="_blank">thejellyshroom<span
+              class="visually-hidden"> (opens in a new tab)</span></a>
+        </p>
       </footer>
 
     </div>

@@ -16,7 +16,7 @@ if (result.exitCode !== 0) {
 }
 
 await moveBuiltHtml('index.html', 'index.html')
-await copyPagesAssetsMp3ToSite()
+await copyPagesAssetsToSite()
 await rm(path.join(outdir, 'pages'), { recursive: true, force: true })
 
 async function resolveBuiltHtmlPath(relativePath: string): Promise<string> {
@@ -38,6 +38,7 @@ async function moveBuiltHtml(sourceRelativePath: string, targetRelativePath: str
   let html = await readFile(sourcePath, 'utf8')
   html = rebaseRelativeAssetUrls(html, sourcePath, targetPath)
   html = rewriteDemoLinksForStaticRoot(html, targetRelativePath)
+  html = rewriteSocialOrigin(html)
 
   await mkdir(path.dirname(targetPath), { recursive: true })
   await writeFile(targetPath, html)
@@ -61,14 +62,33 @@ function rewriteDemoLinksForStaticRoot(html: string, targetRelativePath: string)
   return html.replace(/\bhref="\/demos\/([^"/]+)"/g, (_match, slug: string) => `href="./${slug}"`)
 }
 
-async function copyPagesAssetsMp3ToSite(): Promise<void> {
+const DEFAULT_CADENCE_ORIGIN = 'https://cadence-pretext.vercel.app'
+
+/** Prefer env on Vercel so canonical / Open Graph URLs match the real production host. */
+function rewriteSocialOrigin(html: string): string {
+  const fromEnv =
+    process.env.CADENCE_SITE_ORIGIN?.replace(/\/$/, '') ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : '')
+  if (!fromEnv || fromEnv === DEFAULT_CADENCE_ORIGIN) return html
+  return html.split(DEFAULT_CADENCE_ORIGIN).join(fromEnv)
+}
+
+async function copyPagesAssetsToSite(): Promise<void> {
   const srcDir = path.join(root, 'pages', 'assets')
   const destDir = path.join(outdir, 'assets')
   const entries = await readdir(srcDir, { withFileTypes: true })
   let created = false
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i]!
-    if (!e.isFile() || !e.name.endsWith('.mp3')) continue
+    if (!e.isFile()) continue
+    const copy =
+      e.name.endsWith('.mp3') ||
+      e.name === 'favicon.png' ||
+      e.name === 'favicon.ico' ||
+      e.name === 'og-image.jpg'
+    if (!copy) continue
     if (!created) {
       await mkdir(destDir, { recursive: true })
       created = true

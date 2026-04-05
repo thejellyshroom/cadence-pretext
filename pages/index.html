@@ -170,7 +170,7 @@
     }
 
     .hud-title {
-      font: 300 32px/1.1 var(--serif);
+      font: 300 38px/1.08 var(--serif);
       letter-spacing: 0.02em;
       color: var(--ink);
     }
@@ -188,9 +188,9 @@
     }
 
     .hud-lede {
-      font: 400 17px/1.5 var(--serif);
+      font: 400 20px/1.55 var(--serif);
       color: var(--ink-read);
-      max-width: 42ch;
+      max-width: 40ch;
     }
 
     .hud-section {
@@ -218,8 +218,8 @@
     }
 
     .hud-label {
-      font: 500 11px/1.3 var(--mono);
-      letter-spacing: 0.06em;
+      font: 500 13px/1.35 var(--mono);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       color: var(--ink-read);
     }
@@ -406,7 +406,7 @@
     }
 
     .hud-about-body {
-      font: 400 16px/1.65 var(--serif);
+      font: 400 19px/1.62 var(--serif);
       color: var(--ink-read);
       letter-spacing: 0.01em;
       margin: 0;
@@ -426,8 +426,8 @@
     }
 
     .hud-about-body code {
-      font: 500 12px/1.4 var(--mono);
-      padding: 3px 7px;
+      font: 500 13px/1.45 var(--mono);
+      padding: 4px 8px;
       border-radius: 5px;
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--border);
@@ -475,9 +475,13 @@
 
     .hud-attribution {
       margin: 0;
-      font: 400 13px/1.55 var(--serif);
+      font: 400 15px/1.58 var(--serif);
       color: var(--ink-muted);
       letter-spacing: 0.02em;
+    }
+
+    .hud-attribution p+p {
+      margin-top: 8px;
     }
 
     .hud-hint-wrap .hud-attribution {
@@ -523,7 +527,7 @@
     }
 
     #hint {
-      font: 400 13px/1.6 var(--serif);
+      font: 400 15px/1.62 var(--serif);
       color: var(--ink-muted);
       letter-spacing: 0.02em;
     }
@@ -615,11 +619,17 @@
       </section>
 
       <footer class="hud-hint-wrap" aria-label="Shortcuts and attribution">
-        <p class="hud-attribution">
-          Design and build by
-          <a href="https://jellyshroom.com" rel="noopener noreferrer" target="_blank">thejellyshroom<span
-              class="visually-hidden"> (opens in a new tab)</span></a>
-        </p>
+        <div class="hud-attribution">
+          <p>
+            Design and build by
+            <a href="https://jellyshroom.com" rel="noopener noreferrer" target="_blank">thejellyshroom<span
+                class="visually-hidden"> (opens in a new tab)</span></a>
+          </p>
+          <p>Forked from
+            <a href="https://github.com/chenglou/pretext" rel="noopener noreferrer"
+              target="_blank">chenglou/pretext<span class="visually-hidden"> (opens in a new tab)</span></a>
+          </p>
+        </div>
       </footer>
 
     </div>

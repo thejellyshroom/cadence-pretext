@@ -63,13 +63,7 @@ bun install
 
 The ones worth keeping in your muscle memory:
 
-- `/demos/index`
-- `/demos/bubbles`
-- `/demos/dynamic-layout`
-- `/demos/editorial-engine`
-- `/demos/justification-comparison`
-- `/demos/markdown-chat`
-- `/demos/rich-note`
+- `/` (Cadence — single shipped demo; `/demos/index` redirects to `/`)
 - `/accuracy`
 - `/benchmark`
 - `/corpus`

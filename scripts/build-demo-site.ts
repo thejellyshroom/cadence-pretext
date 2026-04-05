@@ -1,59 +1,28 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = process.cwd()
 const outdir = path.join(root, 'site')
-const entrypoints = [
-  'pages/demos/index.html',
-  'pages/demos/liquid-webgl.html',
-  'pages/demos/accordion.html',
-  'pages/demos/bubbles.html',
-  'pages/demos/dynamic-layout.html',
-  'pages/demos/editorial-engine.html',
-  'pages/demos/justification-comparison.html',
-  'pages/demos/markdown-chat.html',
-  'pages/demos/masonry/index.html',
-  'pages/demos/rich-note.html',
-  'pages/demos/variable-typographic-ascii.html',
-]
+const entrypoints = ['pages/index.html']
 
-const result = Bun.spawnSync(
-  ['bun', 'build', ...entrypoints, '--outdir', outdir],
-  {
-    cwd: root,
-    stdout: 'inherit',
-    stderr: 'inherit',
-  },
-)
+const result = Bun.spawnSync(['bun', 'build', ...entrypoints, '--outdir', outdir], {
+  cwd: root,
+  stdout: 'inherit',
+  stderr: 'inherit',
+})
 
 if (result.exitCode !== 0) {
   process.exit(result.exitCode)
 }
 
-const targets = [
-  { source: 'index.html', target: 'index.html' },
-  { source: 'liquid-webgl.html', target: 'liquid-webgl/index.html' },
-  { source: 'accordion.html', target: 'accordion/index.html' },
-  { source: 'bubbles.html', target: 'bubbles/index.html' },
-  { source: 'dynamic-layout.html', target: 'dynamic-layout/index.html' },
-  { source: 'editorial-engine.html', target: 'editorial-engine/index.html' },
-  { source: 'justification-comparison.html', target: 'justification-comparison/index.html' },
-  { source: 'markdown-chat.html', target: 'markdown-chat/index.html' },
-  { source: 'masonry/index.html', target: 'masonry/index.html' },
-  { source: 'rich-note.html', target: 'rich-note/index.html' },
-  { source: 'variable-typographic-ascii.html', target: 'variable-typographic-ascii/index.html' },
-]
-
-for (let index = 0; index < targets.length; index++) {
-  const entry = targets[index]!
-  await moveBuiltHtml(entry.source, entry.target)
-}
-
+await moveBuiltHtml('index.html', 'index.html')
+await copyPagesAssetsMp3ToSite()
 await rm(path.join(outdir, 'pages'), { recursive: true, force: true })
 
 async function resolveBuiltHtmlPath(relativePath: string): Promise<string> {
   const candidates = [
     path.join(outdir, relativePath),
+    path.join(outdir, 'pages', relativePath),
     path.join(outdir, 'pages', 'demos', relativePath),
   ]
   for (let index = 0; index < candidates.length; index++) {
@@ -90,4 +59,20 @@ function rebaseRelativeAssetUrls(html: string, sourcePath: string, targetPath: s
 function rewriteDemoLinksForStaticRoot(html: string, targetRelativePath: string): string {
   if (targetRelativePath !== 'index.html') return html
   return html.replace(/\bhref="\/demos\/([^"/]+)"/g, (_match, slug: string) => `href="./${slug}"`)
+}
+
+async function copyPagesAssetsMp3ToSite(): Promise<void> {
+  const srcDir = path.join(root, 'pages', 'assets')
+  const destDir = path.join(outdir, 'assets')
+  const entries = await readdir(srcDir, { withFileTypes: true })
+  let created = false
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i]!
+    if (!e.isFile() || !e.name.endsWith('.mp3')) continue
+    if (!created) {
+      await mkdir(destDir, { recursive: true })
+      created = true
+    }
+    await copyFile(path.join(srcDir, e.name), path.join(destDir, e.name))
+  }
 }

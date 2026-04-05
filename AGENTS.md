@@ -29,11 +29,10 @@ See `DEVELOPMENT.md` for the current command surface and packaging/release check
 - `corpora/chrome-sampled.json` / `corpora/chrome-step10.json` — checked-in Chrome corpus sweep snapshots
 - `pages/diagnostic-utils.ts` — shared grapheme-safe diagnostic helpers used by the browser check pages
 - `scripts/pre-wrap-check.ts` — small permanent browser-oracle sweep for the non-default `{ whiteSpace: 'pre-wrap' }` mode
-- `pages/demos/index.html` — public static demo landing page used as the GitHub Pages site root
-- `pages/demos/bubbles.ts` — bubble shrinkwrap demo using the rich non-materializing line-range walker
-- `pages/demos/dynamic-layout.ts` — fixed-height editorial spread with a continuous two-column flow, obstacle-aware title routing, and live logo-driven reflow
-- `pages/demos/markdown-chat.ts` — rich chat virtualization demo that stress-tests prepared templates and manual block layout
-- `pages/demos/rich-note.ts` — inline-rich-note demo that dogfoods the `@chenglou/pretext/inline-flow` sidecar
+- `pages/index.html` — Cadence shell (GitHub Pages site root after `site:build`)
+- `pages/demos/index.ts` — wires the Cadence demo (DOM, frame loop, events); helpers live alongside it in `pages/demos/`
+- `pages/demos/index.html` — redirect stub to `/` for old `/demos/index` links
+- `pages/demos/wrap-geometry.ts` — shared polygon interval helpers for the Cadence demo
 
 ### Implementation notes
 
@@ -112,7 +111,7 @@ See `DEVELOPMENT.md` for the current command surface and packaging/release check
 - Decide whether line-fit tolerance should stay as a browser-specific shim or move to runtime calibration alongside emoji correction.
 - If a future Arabic corpus still exposes misses after preprocessing and corpus cleanup, decide whether that needs a richer break-policy model or a truly shaping-aware architecture beyond segment-sum layout.
 - `layoutWithLines()` now returns line boundary cursors (`start` / `end`) in addition to `{ text, width }`; keep that data model useful for future manual reflow work, especially for the richer editorial demos.
-- The dynamic-layout demo is the current real consumer of the rich line API. If a future custom-layout page wants more metadata, make it prove that need there before expanding the rich API again.
+- The liquid demo (`pages/demos/index.ts`) is the current browser consumer of the rich streaming line API in-repo. If a future custom-layout page wants more metadata, make it prove that need there before expanding the rich API again.
 - The inline-flow sidecar is intentionally narrow. If a future mixed-inline page can be expressed there, prefer extending that sidecar over bloating the core paragraph API.
 - The browser demos should increasingly dogfood `layoutNextLine()` rather than depending on `layoutWithLines()` for whole-paragraph materialization. That keeps the streaming userland path honest.
 - ASCII fast path could skip some CJK, bidi, and emoji overhead.

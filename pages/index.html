@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadence — Pretext demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink: #e8e4dc;
+      /* HUD reading text: lighter than old muted for contrast on dark panel */
+      --ink-read: #d2cdc4;
+      --ink-muted: #9b968e;
+      --ink-dim: #6e6a63;
+      --bg: #030308;
+      --panel: rgba(14, 14, 22, 0.92);
+      --panel-inset: rgba(0, 0, 0, 0.42);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --accent: #5ee0ff;
+      --accent-dim: rgba(94, 224, 255, 0.38);
+      --gold: #c8a96e;
+      --gold-dim: rgba(200, 169, 110, 0.32);
+      --mono: 'DM Mono', ui-monospace, monospace;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --radius-sm: 6px;
+      --radius-lg: 14px;
+      --shadow-hud: 0 28px 56px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      --transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.22s ease;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--serif);
+    }
+
+    .cadence-page {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .cadence-page .stage {
+      position: relative;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    .cadence-line {
+      position: absolute;
+      margin: 0;
+      white-space: pre;
+      color: var(--ink);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      user-select: text;
+      cursor: text;
+      z-index: 1;
+    }
+
+    .cadence-line__glitch {
+      color: #5ee0ff !important;
+      text-shadow:
+        0 0 10px rgba(94, 224, 255, 0.9),
+        0 0 22px rgba(80, 200, 255, 0.55) !important;
+    }
+
+    .cursor-svg {
+      position: absolute;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+      transform-origin: center center;
+      z-index: 3;
+      filter: drop-shadow(0 12px 24px rgba(94, 224, 255, 0.12));
+    }
+
+    .cursor-svg>img,
+    .cursor-svg>svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      width: min(440px, calc(100vw - 40px));
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-strong);
+      background: var(--panel);
+      box-shadow: var(--shadow-hud);
+      backdrop-filter: blur(20px) saturate(1.35);
+      -webkit-backdrop-filter: blur(20px) saturate(1.35);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hud::before {
+      content: '';
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--accent), transparent);
+      opacity: 0.55;
+    }
+
+    .hud-inner {
+      padding: 24px 26px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .hud-brand {
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hud-brand-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .hud-title {
+      font: 300 32px/1.1 var(--serif);
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+
+    .hud-pill {
+      flex-shrink: 0;
+      font: 400 10px/1 var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      background: rgba(200, 169, 110, 0.08);
+    }
+
+    .hud-lede {
+      font: 400 17px/1.5 var(--serif);
+      color: var(--ink-read);
+      max-width: 42ch;
+    }
+
+    .hud-section {
+      margin-bottom: 20px;
+    }
+
+    .hud-section:last-of-type {
+      margin-bottom: 16px;
+    }
+
+    .hud-section-title {
+      font: 500 11px/1.25 var(--mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 12px;
+    }
+
+    .hud-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .hud-label {
+      font: 500 11px/1.3 var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-read);
+    }
+
+    #track {
+      display: none;
+    }
+
+    #trackSelect {
+      width: 100%;
+      font: 400 14px/1.45 var(--mono);
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--panel-inset);
+      color: var(--ink);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #trackSelect:hover {
+      border-color: var(--gold-dim);
+    }
+
+    #trackSelect:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-color: var(--accent-dim);
+    }
+
+    #audioToggle {
+      width: 100%;
+      font: 500 12px/1.25 var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 13px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--gold-dim);
+      background: rgba(200, 169, 110, 0.14);
+      color: var(--gold);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #audioToggle:hover {
+      background: rgba(200, 169, 110, 0.22);
+      border-color: var(--gold);
+    }
+
+    #audioToggle[aria-pressed="true"] {
+      background: rgba(200, 169, 110, 0.26);
+      box-shadow: 0 0 24px rgba(200, 169, 110, 0.18);
+    }
+
+    #audioToggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    #shapeBtn {
+      width: 100%;
+      font: 500 12px/1.25 var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 13px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--ink-read);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #shapeBtn:hover {
+      border-color: var(--accent-dim);
+      color: var(--ink);
+      background: rgba(94, 224, 255, 0.06);
+    }
+
+    #shapeBtn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .hud-about-card {
+      background: var(--panel-inset);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+
+    .hud-about-body {
+      font: 400 16px/1.65 var(--serif);
+      color: var(--ink-read);
+      letter-spacing: 0.01em;
+    }
+
+    .hud-about-body p+p {
+      margin-top: 12px;
+    }
+
+    .hud-about-body strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .hud-about-body code {
+      font: 500 12px/1.4 var(--mono);
+      padding: 3px 7px;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .hud-btn-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      font: 500 12px/1.25 var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 13px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--accent-dim);
+      background: rgba(94, 224, 255, 0.08);
+      color: var(--accent);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .hud-btn-nav:hover {
+      border-color: var(--accent);
+      background: rgba(94, 224, 255, 0.14);
+      color: #7ee8ff;
+    }
+
+    .hud-btn-nav:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .hud-btn-nav svg {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      opacity: 0.9;
+    }
+
+    .hud-hint-wrap {
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    #hint {
+      font: 400 13px/1.6 var(--serif);
+      color: var(--ink-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .corner {
+      position: fixed;
+      bottom: 22px;
+      right: 24px;
+      z-index: 10;
+      font: 300 10px/1 var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(200, 169, 110, 0.42);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      #audioToggle,
+      #shapeBtn,
+      #trackSelect,
+      .hud-btn-nav {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="cadence-page page" aria-label="Cadence layout stage">
+    <div id="stage" class="stage"></div>
+  </main>
+
+  <aside class="hud" role="complementary" aria-label="Cadence controls">
+    <div class="hud-inner">
+
+      <header class="hud-brand">
+        <div class="hud-brand-top">
+          <h1 class="hud-title">Cadence</h1>
+          <span class="hud-pill">Pretext</span>
+        </div>
+        <p class="hud-lede">Spectrum shapes the wrap column. Drag the hull, scroll to resize, cycle the obstacle.</p>
+      </header>
+
+      <section class="hud-section" aria-labelledby="hud-about-h">
+        <h2 id="hud-about-h" class="hud-section-title">About Pretext</h2>
+        <div class="hud-about-card">
+          <div class="hud-about-body">
+            <p><strong>Pretext</strong> prepares text against the browser’s font engine once, then reflows at new widths
+              with arithmetic only—no per-frame DOM measurement or canvas work on the hot path.</p>
+          </div>
+        </div>
+        <a class="hud-btn-nav" href="/benchmark">Open benchmark<svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7M17 7H9M17 7v8" />
+          </svg></a>
+      </section>
+
+      <audio id="track" loop playsinline preload="auto" crossorigin="anonymous"></audio>
+
+      <section class="hud-section" aria-labelledby="hud-audio-h">
+        <h2 id="hud-audio-h" class="hud-section-title">Motion audio</h2>
+        <div class="hud-field">
+          <label class="hud-label" for="trackSelect">Track</label>
+          <select id="trackSelect"></select>
+        </div>
+        <button type="button" id="audioToggle" aria-pressed="false">Play motion</button>
+      </section>
+
+      <section class="hud-section" aria-labelledby="hud-obstacle-h">
+        <h2 id="hud-obstacle-h" class="hud-section-title">Obstacle</h2>
+        <button type="button" id="shapeBtn" aria-label="Cycle floating SVG obstacle shape">Obstacle · blob</button>
+      </section>
+
+      <footer class="hud-hint-wrap">
+        <p id="hint">Choose a track and play — spectrum drives the left column edge. Drag the SVG, scroll to scale,
+          use Obstacle to cycle hulls.</p>
+      </footer>
+
+    </div>
+  </aside>
+
+  <div class="corner" aria-hidden="true">Cadence · obstacle layout</div>
+
+  <script type="module" src="./demos/index.ts"></script>
+</body>
+
+</html>

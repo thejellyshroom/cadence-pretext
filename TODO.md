@@ -21,9 +21,9 @@ Current priorities:
 
 3. Demo work
 
-- Keep the editorial demos as the dogfood path for the rich line APIs.
+- Keep `pages/demos/index.ts` (Cadence, served from `pages/index.html` at `/`) as the in-repo dogfood path for streaming / obstacle-aware rich line APIs.
 - Prefer `layoutNextLine()` / `walkLineRanges()` when a demo is really about streaming or obstacle-aware layout.
-- Add a new demo only if it exposes something the current editorial demos do not already cover.
+- Add a new demo only if it exposes something the liquid demo does not already cover.
 
 Not worth doing right now:
 

@@ -5,6 +5,19 @@ const root = process.cwd()
 const outdir = path.join(root, 'site')
 const entrypoints = ['pages/index.html']
 
+const DEFAULT_CADENCE_ORIGIN = 'https://cadence-pretext.vercel.app'
+
+/** Prefer env on Vercel so canonical / Open Graph URLs match the real production host. */
+function rewriteSocialOrigin(html: string): string {
+  const fromEnv =
+    process.env.CADENCE_SITE_ORIGIN?.replace(/\/$/, '') ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : '')
+  if (!fromEnv || fromEnv === DEFAULT_CADENCE_ORIGIN) return html
+  return html.split(DEFAULT_CADENCE_ORIGIN).join(fromEnv)
+}
+
 const result = Bun.spawnSync(['bun', 'build', ...entrypoints, '--outdir', outdir], {
   cwd: root,
   stdout: 'inherit',
@@ -60,19 +73,6 @@ function rebaseRelativeAssetUrls(html: string, sourcePath: string, targetPath: s
 function rewriteDemoLinksForStaticRoot(html: string, targetRelativePath: string): string {
   if (targetRelativePath !== 'index.html') return html
   return html.replace(/\bhref="\/demos\/([^"/]+)"/g, (_match, slug: string) => `href="./${slug}"`)
-}
-
-const DEFAULT_CADENCE_ORIGIN = 'https://cadence-pretext.vercel.app'
-
-/** Prefer env on Vercel so canonical / Open Graph URLs match the real production host. */
-function rewriteSocialOrigin(html: string): string {
-  const fromEnv =
-    process.env.CADENCE_SITE_ORIGIN?.replace(/\/$/, '') ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : '')
-  if (!fromEnv || fromEnv === DEFAULT_CADENCE_ORIGIN) return html
-  return html.split(DEFAULT_CADENCE_ORIGIN).join(fromEnv)
 }
 
 async function copyPagesAssetsToSite(): Promise<void> {

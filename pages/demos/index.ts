@@ -154,7 +154,10 @@ const dom = {
   stage: getEl<HTMLDivElement>('stage'),
   hint: document.getElementById('hint') as HTMLElement,
   track: getEl<HTMLAudioElement>('track'),
-  trackSelect: getEl<HTMLSelectElement>('trackSelect'),
+  trackPickerRoot: getEl<HTMLDivElement>('trackPicker'),
+  trackPickerTrigger: getEl<HTMLButtonElement>('trackPickerTrigger'),
+  trackPickerList: getEl<HTMLUListElement>('trackPickerList'),
+  trackPickerValue: getEl<HTMLSpanElement>('trackPickerValue'),
   audioToggle: getEl<HTMLButtonElement>('audioToggle'),
   shapeBtn: getEl<HTMLButtonElement>('shapeBtn'),
 }
@@ -493,16 +496,133 @@ function applyMotionTrack(index: number): void {
   }
 }
 
-for (let i = 0; i < MOTION_TRACKS.length; i++) {
-  const opt = document.createElement('option')
-  opt.value = String(i)
-  opt.textContent = MOTION_TRACKS[i]!.label
-  dom.trackSelect.appendChild(opt)
-}
-dom.trackSelect.value = '0'
+let selectedTrackIndex = 0
+let trackPickerOpen = false
+let trackPickerOutsideClose: ((e: MouseEvent) => void) | null = null
 
-dom.trackSelect.addEventListener('change', () => {
-  applyMotionTrack(Number(dom.trackSelect.value))
+function getTrackOptionEls(): HTMLElement[] {
+  return Array.from(dom.trackPickerList.querySelectorAll<HTMLElement>('[role="option"]'))
+}
+
+function syncTrackPickerAria(): void {
+  for (const el of getTrackOptionEls()) {
+    const i = Number(el.dataset['index'])
+    el.setAttribute('aria-selected', i === selectedTrackIndex ? 'true' : 'false')
+  }
+}
+
+function focusTrackOption(index: number): void {
+  const opts = getTrackOptionEls()
+  if (!opts.length) return
+  const i = clamp(index, 0, opts.length - 1)
+  for (let j = 0; j < opts.length; j++) {
+    opts[j]!.tabIndex = j === i ? 0 : -1
+  }
+  opts[i]!.focus()
+}
+
+function closeTrackPicker(): void {
+  if (!trackPickerOpen) return
+  trackPickerOpen = false
+  dom.trackPickerList.hidden = true
+  dom.trackPickerTrigger.setAttribute('aria-expanded', 'false')
+  if (trackPickerOutsideClose) {
+    document.removeEventListener('click', trackPickerOutsideClose)
+    trackPickerOutsideClose = null
+  }
+}
+
+function openTrackPicker(): void {
+  if (trackPickerOpen) return
+  trackPickerOpen = true
+  dom.trackPickerList.hidden = false
+  dom.trackPickerTrigger.setAttribute('aria-expanded', 'true')
+  queueMicrotask(() => {
+    trackPickerOutsideClose = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return
+      if (dom.trackPickerRoot.contains(e.target)) return
+      closeTrackPicker()
+    }
+    document.addEventListener('click', trackPickerOutsideClose)
+  })
+}
+
+function toggleTrackPicker(): void {
+  if (trackPickerOpen) closeTrackPicker()
+  else openTrackPicker()
+}
+
+function selectMotionTrack(index: number): void {
+  applyMotionTrack(index)
+  selectedTrackIndex = index
+  dom.trackPickerValue.textContent = MOTION_TRACKS[index]!.label
+  syncTrackPickerAria()
+}
+
+dom.trackPickerValue.textContent = MOTION_TRACKS[0]!.label
+
+for (let i = 0; i < MOTION_TRACKS.length; i++) {
+  const li = document.createElement('li')
+  li.className = 'track-picker__option'
+  li.setAttribute('role', 'option')
+  li.tabIndex = -1
+  li.dataset['index'] = String(i)
+  li.textContent = MOTION_TRACKS[i]!.label
+  li.addEventListener('click', e => {
+    e.stopPropagation()
+    selectMotionTrack(i)
+    closeTrackPicker()
+    dom.trackPickerTrigger.focus()
+  })
+  dom.trackPickerList.appendChild(li)
+}
+syncTrackPickerAria()
+
+dom.trackPickerTrigger.addEventListener('click', e => {
+  e.stopPropagation()
+  toggleTrackPicker()
+})
+
+dom.trackPickerTrigger.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && trackPickerOpen) {
+    e.preventDefault()
+    closeTrackPicker()
+    return
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    if (!trackPickerOpen) openTrackPicker()
+    queueMicrotask(() => focusTrackOption(selectedTrackIndex))
+  }
+})
+
+dom.trackPickerList.addEventListener('keydown', e => {
+  const opts = getTrackOptionEls()
+  const cur = opts.findIndex(el => el === document.activeElement)
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    closeTrackPicker()
+    dom.trackPickerTrigger.focus()
+    return
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    const next = cur < 0 ? 0 : Math.min(cur + 1, opts.length - 1)
+    focusTrackOption(next)
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    const next = cur <= 0 ? 0 : cur - 1
+    focusTrackOption(next)
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (cur >= 0) {
+      selectMotionTrack(Number(opts[cur]!.dataset['index']))
+      closeTrackPicker()
+      dom.trackPickerTrigger.focus()
+    }
+  }
 })
 
 dom.audioToggle.addEventListener('click', () => {
